@@ -22,6 +22,11 @@ async function run(){
     const bookingsCollection = client.db('bikeReSale').collection('bookings')
     
 
+    app.post('/advertised-products', async(req, res) => {
+       const product = req.body
+       const result = await advertisedProductsCollection.insertOne(product)
+       res.send(result)
+    })
     app.get('/advertised-products', async(req, res) => {
        const query = {}
        const products = await advertisedProductsCollection.find(query).toArray()
@@ -33,26 +38,39 @@ async function run(){
        const categories = await categoriesCollection.find(query).toArray()
        res.send(categories)
     })
-
-    // Products Collection api 
+    
+    app.get('/category/:id', async(req, res) => {
+      const id = req.params.id
+      const filter = {_id: ObjectId(id)}
+      const result = await categoriesCollection.findOne(filter)
+      res.send(result)
+    })
+    //-----Products Collection api
+    app.post('/products', async(req, res) => {
+       const product = req.body
+       console.log(product)
+       const result = await productsCollection.insertOne(product)
+       res.send(result)
+    })
     app.get('/products', async(req, res) => {
        const categoryName = req.query.categoryName
        const query = {category_name: categoryName}
        const result = await productsCollection.find(query).toArray()
        res.send(result)
     })
-    app.get('/products', async(req, res) => {
-       const email = req.query.email
-       const query = {sellerEmail: email}
+    app.get('/myProducts', async(req, res) => {
+       const sellerName = req.query.sellerName
+       const query = {seller_name: sellerName} 
        const result = await productsCollection.find(query).toArray()
        res.send(result)
     })
-    app.get('/category/:id', async(req, res) => {
+    app.delete('/products/:id', async(req, res) => {
        const id = req.params.id
        const filter = {_id: ObjectId(id)}
-       const result = await categoriesCollection.findOne(filter)
+       const result = await productsCollection.deleteOne(filter)
        res.send(result)
     })
+    
 
     app.post('/users', async(req, res) => {
        const user = req.body
@@ -65,8 +83,8 @@ async function run(){
        const result = await usersCollection.insertOne(user)
        res.send(result)
     })
-    app.get('/users/:email', async(req, res) => {
-       const email = req.params.email
+    app.get('/users', async(req, res) => {
+       const email = req.query.email
        const query = {email: email}
        const user = await usersCollection.findOne(query)
        res.send(user)

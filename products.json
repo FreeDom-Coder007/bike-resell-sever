@@ -2,14 +2,13 @@
     {
         "category_name": "Yamaha",
         "image": "https://www.banglamotor.net/images/yamaha/yamaha-r15m-image01.jpg",
-        "name": "Yamaha R15M",
+        "product_name": "Yamaha R15M",
         "location": "north decota",
         "original_price": "5000",
         "resell_price": "3200",
-        "years_of_use": "1.5 years",
+        "purchase_year": "1.5 years",
         "upload_time": "",
-        "seller_name": "Edward",
-        "role": ""
+        "seller_name": "Edward" 
      },
      {
        "category_name": "Yamaha",
