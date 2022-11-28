@@ -24,7 +24,7 @@ function verifyJWT(req, res, next){
 
    jwt.verify(token, process.env.JWT_ACCESS_KEY, function(err, decoded){
       if(err){
-         return res.status.send({message: 'forbidden access'})
+         return res.status(401).send({message: 'forbidden access'})
       }
       req.decoded = decoded
       next()
@@ -91,8 +91,7 @@ async function run(){
     })
     //-----Products Collection api
     app.post('/products', async(req, res) => {
-       const product = req.body
-       console.log(product)
+       const product = req.body 
        const result = await productsCollection.insertOne(product)
        res.send(result)
     })
@@ -103,8 +102,7 @@ async function run(){
        res.send(result)
     })
     app.get('/myProducts', async(req, res) => {
-       const sellerName = req.query.sellerName
-       console.log(req.headers.authorization)
+       const sellerName = req.query.sellerName 
 
        const query = {seller_name: sellerName} 
        const result = await productsCollection.find(query).toArray()
@@ -147,11 +145,10 @@ async function run(){
        const result = await usersCollection.insertOne(user)
        res.send(result)
     })
-    app.get('/users', async(req, res) => {
-       const email = req.query.email
+    app.get('/users/:email', async(req, res) => {
+       const email = req.params.email
        const query = {email: email} 
-       const user = await usersCollection.findOne(query)
-       console.log(user)
+       const user = await usersCollection.findOne(query) 
        res.send(user)
     })
     app.get('/allBuyers', async(req, res) => {
@@ -176,12 +173,19 @@ async function run(){
        const result = await bookingsCollection.insertOne(booking)
        res.send(result)
     })
-    app.get('/bookings', async(req, res) => {
+    app.get('/bookings', verifyJWT, async(req, res) => {
        const email = req.query.email
+       const decodedEmail = req.decoded.email
+
+       if(!decodedEmail){
+         return res.status(403).send({message: 'forbidden access'})
+       }
+
        const filter = {email: email}
        const result = await bookingsCollection.find(filter).toArray()
        res.send(result)
     })
+
     app.get('/bookings/:id', async(req, res) => {
        const id = req.params.id
        const filter = {_id: ObjectId(id)}
