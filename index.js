@@ -53,11 +53,12 @@ async function run(){
        res.send(products)
     })
 
+
     // Reported Products api
     app.post('/reported-products', async(req, res) => {
-       const product = req.body
-       const result = await reportedProductsCollection.insertOne(product)
-       res.send(result)
+      const product = req.body
+      const result = await reportedProductsCollection.insertOne(product)
+      res.send(result)
     })
     app.get('/reported-products', async(req, res) => {
        const query = {} 
