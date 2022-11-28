@@ -5,6 +5,7 @@ const app = express()
 const port = process.env.PORT || 4000
 require('dotenv').config()
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const jwt = require('jsonwebtoken')
 
 //Middle Wares
 app.use(cors())
@@ -12,6 +13,10 @@ app.use(express.json())
 
 const uri = `mongodb+srv://${process.env.BIKE_RESALE_USER}:${process.env.BIKE_RESALE_PASSWORD}@cluster0.gijesb3.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+
+function verifyJWT(){
+   
+}
 
 async function run(){
   try{
@@ -70,6 +75,23 @@ async function run(){
        const result = await productsCollection.deleteOne(filter)
        res.send(result)
     })
+   //  app.put('/products/:name', async(req, res) => {
+   //     const productName = req.params.name
+   //     const filter = {productName: productName}
+   //     const bookedProduct = await bookingsCollection.findOne(filter)
+
+   //     if(!bookedProduct){
+   //        return;
+   //     }
+   //     const option = {upsert: true}
+   //     const updatedDoc = {
+   //        $set: {
+   //           status: 'Booked'
+   //        }
+   //     }
+   //     const result = await productsCollection.updateOne(filter, updatedDoc, option)
+   //     res.send(result)
+   //  })
     
 
     app.post('/users', async(req, res) => {
@@ -89,6 +111,12 @@ async function run(){
        const user = await usersCollection.findOne(query)
        res.send(user)
     })
+    app.get('/allBuyers', async(req, res) => {
+       const query = {role: 'Buyer'}
+       const result = await usersCollection.find(query).toArray()
+       res.send(result)
+    })
+    
 
     app.post('/bookings', async(req, res) => {
        const booking = req.body
