@@ -215,7 +215,6 @@ async function run(){
           clientSecret: paymentIntent.client_secret,
        });
     })
-
     app.get('/jwt', async(req, res) => {
       const email = req.query.email
       const query = {email: email}
@@ -225,7 +224,7 @@ async function run(){
          res.send({accessToken: token}) 
       }
       res.status(401).send('Unathorized access')
-    })
+   }) 
 
   }
   finally{}
