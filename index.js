@@ -14,8 +14,22 @@ app.use(express.json())
 const uri = `mongodb+srv://${process.env.BIKE_RESALE_USER}:${process.env.BIKE_RESALE_PASSWORD}@cluster0.gijesb3.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
-function verifyJWT(){
-   
+function verifyJWT(req, res, next){
+
+   const authHeader = req.headers.authorization
+   if(!authHeader){
+      return res.status(401).send('unauthorized access')
+   }
+   const token = authHeader.split(' ')[1]
+
+   jwt.verify(token, process.env.JWT_ACCESS_KEY, function(err, decoded){
+      if(err){
+         return res.status.send({message: 'forbidden access'})
+      }
+      req.decoded = decoded
+      next()
+   })
+
 }
 
 async function run(){
@@ -23,6 +37,7 @@ async function run(){
     const advertisedProductsCollection = client.db('bikeReSale').collection('advertisedProducts')
     const categoriesCollection = client.db('bikeReSale').collection('categories')
     const productsCollection = client.db('bikeReSale').collection('products')
+    const reportedProductsCollection = client.db('bikeReSale').collection('reportedProdcuts')
     const usersCollection = client.db('bikeReSale').collection('users')
     const bookingsCollection = client.db('bikeReSale').collection('bookings')
     
@@ -36,6 +51,30 @@ async function run(){
        const query = {}
        const products = await advertisedProductsCollection.find(query).toArray()
        res.send(products)
+    })
+
+    // Reported Products api
+    app.post('/reported-products', async(req, res) => {
+       const product = req.body
+       const result = await reportedProductsCollection.insertOne(product)
+       res.send(result)
+    })
+    app.get('/reported-products', async(req, res) => {
+       const query = {} 
+       const result = await reportedProductsCollection.find(query).toArray()
+       res.send(result)
+    })
+    app.delete('/reportedProducts/:name', async(req, res) => {
+       const productName = req.params.name
+       const filter = {product_name: productName}
+       const result = await reportedProductsCollection.deleteOne(filter)
+       res.send(result)
+    })
+    app.delete('/reported-products/:name', async(req, res) => {
+       const productName = req.params.name
+       const filter = {product_name: productName}
+       const result = await productsCollection.deleteOne(filter)
+       res.send(result)
     })
 
     app.get('/product-categories', async(req, res) => {
@@ -65,6 +104,8 @@ async function run(){
     })
     app.get('/myProducts', async(req, res) => {
        const sellerName = req.query.sellerName
+       console.log(req.headers.authorization)
+
        const query = {seller_name: sellerName} 
        const result = await productsCollection.find(query).toArray()
        res.send(result)
@@ -94,6 +135,7 @@ async function run(){
    //  })
     
 
+    //-------- Users API
     app.post('/users', async(req, res) => {
        const user = req.body
        const email = req.query.email 
@@ -107,8 +149,9 @@ async function run(){
     })
     app.get('/users', async(req, res) => {
        const email = req.query.email
-       const query = {email: email}
+       const query = {email: email} 
        const user = await usersCollection.findOne(query)
+       console.log(user)
        res.send(user)
     })
     app.get('/allBuyers', async(req, res) => {
@@ -145,6 +188,12 @@ async function run(){
        const result = await bookingsCollection.findOne(filter)
        res.send(result)
     })
+    app.delete('/bookings/:id', async(req, res) => {
+       const id = req.params.id
+       const filter = {_id: ObjectId(id)}
+       const result = await bookingsCollection.deleteOne(filter)
+       res.send(result)
+    })
 
     app.post('/create-payment-intent', async(req, res) => {
        const product = req.body;
@@ -161,6 +210,17 @@ async function run(){
        res.send({
           clientSecret: paymentIntent.client_secret,
        });
+    })
+
+    app.get('/jwt', async(req, res) => {
+      const email = req.query.email
+      const query = {email: email}
+      const user = await usersCollection.findOne(query)
+      if(user){
+         const token = jwt.sign({email}, process.env.JWT_ACCESS_KEY, {expiresIn: '2h'})
+         res.send({accessToken: token}) 
+      }
+      res.status(401).send('Unathorized access')
     })
 
   }
