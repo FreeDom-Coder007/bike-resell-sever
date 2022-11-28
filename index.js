@@ -116,7 +116,17 @@ async function run(){
        const result = await usersCollection.find(query).toArray()
        res.send(result)
     })
-    
+    app.get('/allSellers', async(req, res) => {
+       const query = {role: 'Seller'}
+       const result = await usersCollection.find(query).toArray()
+       res.send(result)
+    })
+    app.delete('/users/:id', async(req, res) => {
+       const id = req.params.id
+       const filter = {_id: ObjectId(id)}
+       const result = await usersCollection.deleteOne(filter)
+       res.send(result)
+    })    
 
     app.post('/bookings', async(req, res) => {
        const booking = req.body
